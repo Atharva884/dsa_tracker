@@ -5,7 +5,8 @@ const router = express.Router();
 const userRoutes = require("./userRoutes");
 
 //code here
-router.use("/user", userRoutes);
+router.use("/", userRoutes); // All routes (Web + API)
+
 router.get("/health-check", (req,res)=>{
   res.json("Server Health: OK");
 })

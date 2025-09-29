@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="bg-light">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold" href="/dashboard">
+                <i class="bi bi-code-square"></i> DSA Tracker
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i> <%= user.name %> <%= user.lName %>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="/logout"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-4">
+        <!-- Success/Error Messages -->
+        <% if (uploadSuccess) { %>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill"></i> <%= uploadSuccess %>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <% } %>
+
+        <% if (uploadError) { %>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> <%= uploadError %>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <% } %>
+
+        <!-- Welcome Section -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <h4 class="mb-0">Welcome back, <%= user.name %>! 👋</h4>
+                <p class="text-muted small mb-0">Track your DSA practice progress</p>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <% if (hasProblems) { %>
+        <div class="row mb-3">
+            <div class="col-md-3 mb-3">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center py-3">
+                        <i class="bi bi-list-task fs-3 text-primary"></i>
+                        <h5 class="mt-2 mb-0"><%= stats.total %></h5>
+                        <p class="text-muted mb-0 small">Total Problems</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center py-3">
+                        <i class="bi bi-check-circle fs-3 text-success"></i>
+                        <h5 class="mt-2 mb-0"><%= stats.completed %></h5>
+                        <p class="text-muted mb-0 small">Completed</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center py-3">
+                        <i class="bi bi-hourglass-split fs-3 text-warning"></i>
+                        <h5 class="mt-2 mb-0"><%= stats.remaining %></h5>
+                        <p class="text-muted mb-0 small">Remaining</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center py-3">
+                        <i class="bi bi-graph-up fs-3 text-info"></i>
+                        <h5 class="mt-2 mb-0"><%= stats.progress %>%</h5>
+                        <p class="text-muted mb-0 small">Progress</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <% } %>
+
+        <!-- Manage Problems Section OR Upload Section -->
+        <% if (hasProblems) { %>
+        <!-- Manage Problems (when user has problems) -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card border-0 shadow-lg">
+                    <div class="card-body p-4">
+                        <h5 class="card-title mb-3">
+                            <i class="bi bi-gear"></i> Manage Your Problems
+                        </h5>
+                        
+                        <div class="d-grid gap-2 d-md-flex">
+                            <a href="#" class="btn btn-primary" id="generateBtn">
+                                <i class="bi bi-shuffle"></i> Generate 5 Problems
+                            </a>
+                            <a href="#" class="btn btn-outline-info" id="viewAllBtn">
+                                <i class="bi bi-list-ul"></i> View All Problems
+                            </a>
+                            <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                                <i class="bi bi-plus-circle"></i> Add More Problems
+                            </button>
+                            
+                            <% if (stats.remaining === 0) { %>
+                            <form action="/reset-cycle" method="POST" class="d-inline">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-arrow-clockwise"></i> Repeat Cycle
+                                </button>
+                            </form>
+                            <% } %>
+                            
+                            <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                <i class="bi bi-trash"></i> Delete All
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Generated Problems Section -->
+        <div class="row mt-3" id="generatedSection" style="display: none;">
+            <div class="col-12">
+                <div class="card border-0 shadow-lg">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">Today's Practice Problems</h5>
+                        <div id="problemsList"></div>
+                        <div id="submitButtonContainer" style="display: none;" class="mt-3 text-end">
+                            <button class="btn btn-success" id="submitProblemsBtn">
+                                <i class="bi bi-check-circle"></i> Submit Completed Problems
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <% } else { %>
+        <!-- First Time Upload (when user has no problems) -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card border-0 shadow-lg">
+                    <div class="card-body p-4 text-center">
+                        <i class="bi bi-file-earmark-spreadsheet fs-1 text-primary mb-3"></i>
+                        <h5 class="card-title mb-3">Get Started!</h5>
+                        <p class="text-muted mb-4">Upload your DSA problem list to start tracking your progress</p>
+                        <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                            <i class="bi bi-cloud-upload"></i> Upload Problem List
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <% } %>
+    </div>
+
+    <!-- Upload Modal -->
+    <div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="uploadModalLabel">
+                        <i class="bi bi-cloud-upload"></i> <%= hasProblems ? 'Add More Problems' : 'Upload Your DSA Problem List' %>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <h6 class="alert-heading">Excel File Format:</h6>
+                        <ul class="mb-0 small">
+                            <li>Column 1: <strong>title</strong> - Problem name</li>
+                            <li>Column 2: <strong>link</strong> - Problem URL</li>
+                            <li>Supported formats: .xls, .xlsx</li>
+                            <li>Maximum file size: 5MB</li>
+                            <% if (hasProblems) { %>
+                            <li><strong>Duplicates will be automatically skipped!</strong></li>
+                            <% } %>
+                        </ul>
+                    </div>
+
+                    <form action="/upload-problems" method="POST" enctype="multipart/form-data" id="uploadForm">
+                        <div class="mb-3">
+                            <label for="excelFile" class="form-label">Choose Excel File</label>
+                            <input type="file" class="form-control" id="excelFile" name="excelFile" accept=".xls,.xlsx" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="uploadBtn">
+                        <i class="bi bi-upload"></i> <%= hasProblems ? 'Add Problems' : 'Upload Problems' %>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete all problems? This action cannot be undone.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form action="/delete-all-problems" method="POST" class="d-inline">
+                        <button type="submit" class="btn btn-danger">Delete All</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/dashboard.js"></script>
+</body>
+</html>

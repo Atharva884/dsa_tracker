@@ -12,18 +12,15 @@ let User = function (data) {
 User.prototype.cleanUp = function () {
   // get rid of any bogus properties
   this.data = {
-    //predfined start
-    name: this.data.name,
-    lName: this.data.lName,
+    name: this.data.name || "",
+    lName: this.data.lName || "",
     email: this.data.email.trim().toLowerCase(),
     password: this.data.password,
-    contactNumber: this.data.contactNumber,
-    address: this.data.address,
-    city: this.data.city,
+    contactNumber: this.data.contactNumber || "",
+    address: this.data.address || "",
+    city: this.data.city || "",
     role: "user",
     createdAt: new Date(),
-//predefined end
-
   };
 };
 
