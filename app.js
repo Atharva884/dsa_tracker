@@ -1,5 +1,5 @@
 const express = require("express");
-const routes = require("./routes/userRoutes.js");
+const routes = require("./routes/router.js");
 const morgan = require("morgan");
 const cors = require("cors");
 const session = require("express-session");

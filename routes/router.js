@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 //imports here
-const userRoutes = require("./userRoutes");
+const userRoutes = require("./userRoutes.js");
 
 // //code here
 router.use("/", userRoutes); // All routes (Web + API)
