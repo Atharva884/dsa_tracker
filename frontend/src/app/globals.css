@@ -1,0 +1,225 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+
+:root {
+  --background: #0a0a0a;
+  --foreground: #fafafa;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* Dark theme as default - Supabase inspired */
+:root {
+  --background: 0 0% 3.9%;
+  --foreground: 0 0% 98%;
+  --card: 0 0% 6%;
+  --card-foreground: 0 0% 98%;
+  --popover: 0 0% 6%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 142 76% 36%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 0 0% 9%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 0 0% 9%;
+  --muted-foreground: 0 0% 63%;
+  --accent: 0 0% 9%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62.8% 50%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 12%;
+  --input: 0 0% 12%;
+  --ring: 142 76% 36%;
+  --radius: 0.75rem;
+  --font-inter: 'Inter', sans-serif;
+  
+  /* Supabase inspired custom variables */
+  --supabase-green: 142 76% 36%;
+  --supabase-green-dark: 142 76% 30%;
+  --supabase-bg: 0 0% 3.9%;
+  --supabase-surface: 0 0% 6%;
+  --supabase-overlay: 0 0% 9%;
+  --supabase-border: 0 0% 12%;
+  --supabase-border-hover: 0 0% 18%;
+}
+
+/* Light theme (fallback) */
+.light {
+  --background: 0 0% 100%;
+  --foreground: 224 71.4% 4.1%;
+  --card: 0 0% 100%;
+  --card-foreground: 224 71.4% 4.1%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 224 71.4% 4.1%;
+  --primary: 220.9 39.3% 11%;
+  --primary-foreground: 210 20% 98%;
+  --secondary: 220 14.3% 95.9%;
+  --secondary-foreground: 220.9 39.3% 11%;
+  --muted: 220 14.3% 95.9%;
+  --muted-foreground: 220 8.9% 46.1%;
+  --accent: 220 14.3% 95.9%;
+  --accent-foreground: 220.9 39.3% 11%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 20% 98%;
+  --border: 220 13% 91%;
+  --input: 220 13% 91%;
+  --ring: 224 71.4% 4.1%;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: var(--font-inter);
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+/* Supabase-inspired custom styles */
+.supabase-card {
+  background: hsl(var(--supabase-surface));
+  border: 1px solid hsl(var(--supabase-border));
+  border-radius: var(--radius);
+  transition: all 0.2s ease;
+}
+
+.supabase-card:hover {
+  border-color: hsl(var(--supabase-border-hover));
+  transform: translateY(-1px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+.supabase-surface {
+  background: hsl(var(--supabase-surface));
+  border: 1px solid hsl(var(--supabase-border));
+}
+
+.supabase-overlay {
+  background: hsl(var(--supabase-overlay));
+  border: 1px solid hsl(var(--supabase-border));
+}
+
+.supabase-button-primary {
+  background: hsl(var(--supabase-green));
+  color: white;
+  border: 1px solid hsl(var(--supabase-green));
+  transition: all 0.2s ease;
+}
+
+.supabase-button-primary:hover {
+  background: hsl(var(--supabase-green-dark));
+  border-color: hsl(var(--supabase-green-dark));
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
+}
+
+.supabase-button-secondary {
+  background: transparent;
+  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--supabase-border));
+  transition: all 0.2s ease;
+}
+
+.supabase-button-secondary:hover {
+  background: hsl(var(--supabase-overlay));
+  border-color: hsl(var(--supabase-border-hover));
+}
+
+.supabase-input {
+  background: hsl(var(--supabase-surface));
+  border: 1px solid hsl(var(--supabase-border));
+  color: hsl(var(--foreground));
+  transition: all 0.2s ease;
+}
+
+.supabase-input:focus {
+  border-color: hsl(var(--supabase-green));
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.1);
+}
+
+.supabase-input::placeholder {
+  color: hsl(var(--muted-foreground));
+}
+
+/* Stats cards specific styling */
+.stats-card {
+  background: hsl(var(--supabase-surface));
+  border: 1px solid hsl(var(--supabase-border));
+  border-radius: var(--radius);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.stats-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--card-gradient-start, hsl(var(--supabase-green))), var(--card-gradient-end, hsl(var(--supabase-green))));
+}
+
+.stats-card:hover {
+  border-color: hsl(var(--supabase-border-hover));
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+/* Modern glass effects inspired by Supabase */
+.glass-effect {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(16px);
+  border: 1px solid hsl(var(--supabase-border));
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.glass-effect-strong {
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid hsl(var(--supabase-border-hover));
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+.gradient-border {
+  position: relative;
+}
+
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 0.75rem;
+  padding: 1px;
+  background: linear-gradient(to right, #7c3aed, #4f46e5);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: xor;
+}
+
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer::after {
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(to right, transparent, rgb(255 255 255 / 0.1), transparent);
+  content: '';
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
