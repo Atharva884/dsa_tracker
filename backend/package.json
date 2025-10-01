@@ -4,6 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node db.js",
+    "dev": "nodemon db.js",
     "server": "nodemon db.js",
     "watch": "start nodemon db.js"
   },

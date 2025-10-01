@@ -11,7 +11,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 
 interface UploadModalProps {
   open: boolean
@@ -160,11 +159,12 @@ export function UploadModal({ open, onOpenChange, onUpload }: UploadModalProps) 
                     or click to browse files
                   </p>
                 </div>
-                <Input
+                <input
                   type="file"
                   accept=".xlsx,.xls"
                   onChange={handleFileChange}
-                  className="absolute inset-0 opacity-0 cursor-pointer"
+                  className="absolute inset-0 opacity-0 cursor-pointer z-10 w-full h-full"
+                  style={{ background: 'transparent' }}
                 />
               </div>
             )}

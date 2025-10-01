@@ -17,12 +17,11 @@ app.use(morgan("dev"));
 app.use(
   cors({
     origin: [
-      process.env.FRONTEND_URL || "http://localhost:3000",
-      "http://localhost:3000",
-      "http://localhost:3001",
-      "http://127.0.0.1:3000",
-      "http://127.0.0.1:3001",
+      "http://localhost:7001",
+      "http://127.0.0.1:7001",
+      "https://dsatracker.atharvajadhav.dev",
     ],
+
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allowedHeaders: [
