@@ -33,6 +33,7 @@ app.use(
       "Origin",
       "Access-Control-Request-Method",
       "Access-Control-Request-Headers",
+      "Acess-Control-Allow-Origin",
     ],
     exposedHeaders: ["Content-Length", "X-Foo", "X-Bar"],
     preflightContinue: false,
