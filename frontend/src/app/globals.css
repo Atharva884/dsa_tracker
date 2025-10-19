@@ -111,6 +111,7 @@ body {
   color: white;
   border: 1px solid hsl(var(--supabase-green));
   transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .supabase-button-primary:hover {
@@ -125,6 +126,7 @@ body {
   color: hsl(var(--foreground));
   border: 1px solid hsl(var(--supabase-border));
   transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .supabase-button-secondary:hover {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, memo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Search,
@@ -24,18 +24,28 @@ interface ProblemsListProps {
   onClose: () => void
 }
 
-export function ProblemsList({ problems, onMarkDone, onClose }: ProblemsListProps) {
+export const ProblemsList = memo(function ProblemsList({ problems, onMarkDone, onClose }: ProblemsListProps) {
   const [searchTerm, setSearchTerm] = useState('')
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
   const [filter, setFilter] = useState<'all' | 'completed' | 'pending'>('all')
   const [filteredProblems, setFilteredProblems] = useState<Problem[]>(problems)
+
+  // Debounce search term
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm)
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [searchTerm])
 
   useEffect(() => {
     let filtered = problems
 
     // Apply search filter
-    if (searchTerm) {
+    if (debouncedSearchTerm) {
       filtered = filtered.filter(problem =>
-        problem.title.toLowerCase().includes(searchTerm.toLowerCase())
+        problem.title.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
       )
     }
 
@@ -47,19 +57,14 @@ export function ProblemsList({ problems, onMarkDone, onClose }: ProblemsListProp
     }
 
     setFilteredProblems(filtered)
-  }, [problems, searchTerm, filter])
+  }, [problems, debouncedSearchTerm, filter])
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -20 }
-  }
-
-  const stats = {
+  // Memoize stats calculation
+  const stats = useMemo(() => ({
     total: problems.length,
     completed: problems.filter(p => p.done).length,
     pending: problems.filter(p => !p.done).length,
-  }
+  }), [problems])
 
   return (
     <Card className="supabase-card shadow-2xl">
@@ -151,14 +156,14 @@ export function ProblemsList({ problems, onMarkDone, onClose }: ProblemsListProp
             </motion.div>
           ) : (
             <div className="space-y-2">
-              {filteredProblems.map((problem, index) => (
+              {filteredProblems.map((problem) => (
                 <motion.div
                   key={problem._id}
-                  variants={itemVariants}
-                  initial="hidden"
-                  animate="visible"
-                  exit="exit"
-                  transition={{ duration: 0.2, delay: index * 0.02 }}
+                  layout
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
                   className={`group p-4 rounded-lg border transition-all hover:shadow-md ${
                     problem.done
                       ? 'bg-emerald-500/10 border-emerald-500/20'
@@ -169,7 +174,7 @@ export function ProblemsList({ problems, onMarkDone, onClose }: ProblemsListProp
                     {/* Status Button */}
                     <button
                       onClick={() => onMarkDone(problem._id)}
-                      className="flex-shrink-0 transition-transform hover:scale-110"
+                      className="flex-shrink-0 transition-transform hover:scale-110 cursor-pointer"
                     >
                       {problem.done ? (
                         <CheckCircle2 className="w-5 h-5 text-emerald-600" />
@@ -223,4 +228,4 @@ export function ProblemsList({ problems, onMarkDone, onClose }: ProblemsListProp
       </CardContent>
     </Card>
   )
-}
+})

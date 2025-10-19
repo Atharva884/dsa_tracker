@@ -7,7 +7,6 @@ import {
   Target,
   Clock,
   TrendingUp,
-
   Upload,
   Shuffle,
   List,
@@ -23,6 +22,7 @@ import {
   Trophy,
   Zap,
   AlertTriangle,
+  X,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -32,6 +32,7 @@ import { apiService, type Problem } from '@/lib/api'
 import { UploadModal } from '@/components/UploadModal'
 import { ProblemsList } from '@/components/ProblemsList'
 
+// Move animation variants outside component to prevent re-creation
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -131,6 +132,16 @@ export default function DashboardPage() {
     loadDashboardData()
   }, [user, router, loadDashboardData, isHydrated])
 
+  // Auto-dismiss messages after 5 seconds
+  useEffect(() => {
+    if (message) {
+      const timer = setTimeout(() => {
+        setMessage(null)
+      }, 5000)
+      return () => clearTimeout(timer)
+    }
+  }, [message])
+
   const handleLogout = async () => {
     try {
       await apiService.logout()
@@ -167,7 +178,7 @@ export default function DashboardPage() {
     }
   }
 
-  const handleUpload = async (file: File) => {
+  const handleUpload = useCallback(async (file: File) => {
     try {
       await apiService.uploadProblems(file)
       setMessage({ type: 'success', text: 'Problems uploaded successfully!' })
@@ -178,38 +189,88 @@ export default function DashboardPage() {
       setMessage({ type: 'error', text: errorMsg })
       throw error // Re-throw to let UploadModal handle it
     }
-  }
+  }, [loadDashboardData])
 
-  const toggleProblemDone = async (problemId: string) => {
+  const toggleProblemDone = useCallback(async (problemId: string) => {
+    // Find the current problem state
+    const currentProblem = problems.find(p => p._id === problemId)
+    if (!currentProblem) return
+
+    const newDoneState = !currentProblem.done
+
+    // Optimistic UI update - update immediately
+    setGeneratedProblems(prev =>
+      prev.map(p =>
+        p._id === problemId ? { ...p, done: newDoneState } : p
+      )
+    )
+
+    // Update problems store
+    useProblemsStore.getState().updateProblem(problemId, { done: newDoneState })
+
+    // Update stats optimistically
+    const currentStats = stats
+    const newStats = {
+      ...currentStats,
+      completed: newDoneState ? currentStats.completed + 1 : currentStats.completed - 1,
+      remaining: newDoneState ? currentStats.remaining - 1 : currentStats.remaining + 1,
+      progress: currentStats.total > 0
+        ? Math.round(((newDoneState ? currentStats.completed + 1 : currentStats.completed - 1) / currentStats.total) * 100)
+        : 0
+    }
+    setStats(newStats)
+
     try {
+      // Call API in background
       await apiService.markAsDone(problemId)
-      
-      // Update the generated problems state immediately for better UX
+    } catch {
+      // Revert on error
       setGeneratedProblems(prev =>
         prev.map(p =>
-          p._id === problemId ? { ...p, done: !p.done } : p
+          p._id === problemId ? { ...p, done: !newDoneState } : p
         )
       )
-      
-      // Reload dashboard data to update stats and main problems
-      await loadDashboardData()
-    } catch {
+      useProblemsStore.getState().updateProblem(problemId, { done: !newDoneState })
+      setStats(currentStats)
       setMessage({ type: 'error', text: 'Failed to update problem status' })
     }
-  }
+  }, [problems, stats, setStats])
 
-  const handleMarkProblemDone = async (problemId: string) => {
+  const handleMarkProblemDone = useCallback(async (problemId: string) => {
+    // Find the current problem state
+    const currentProblem = problems.find(p => p._id === problemId)
+    if (!currentProblem) return
+
+    const newDoneState = !currentProblem.done
+
+    // Optimistic UI update
+    useProblemsStore.getState().updateProblem(problemId, { done: newDoneState })
+
+    // Update stats optimistically
+    const currentStats = stats
+    const newStats = {
+      ...currentStats,
+      completed: newDoneState ? currentStats.completed + 1 : currentStats.completed - 1,
+      remaining: newDoneState ? currentStats.remaining - 1 : currentStats.remaining + 1,
+      progress: currentStats.total > 0
+        ? Math.round(((newDoneState ? currentStats.completed + 1 : currentStats.completed - 1) / currentStats.total) * 100)
+        : 0
+    }
+    setStats(newStats)
+
     try {
+      // Call API in background
       await apiService.markAsDone(problemId)
-      // Reload dashboard data
-      await loadDashboardData()
-      setMessage({ type: 'success', text: 'Problem marked as done!' })
+      setMessage({ type: 'success', text: `Problem marked as ${newDoneState ? 'done' : 'undone'}!` })
     } catch {
+      // Revert on error
+      useProblemsStore.getState().updateProblem(problemId, { done: !newDoneState })
+      setStats(currentStats)
       setMessage({ type: 'error', text: 'Failed to update problem status' })
     }
-  }
+  }, [problems, stats, setStats])
 
-  const handleResetCycle = async () => {
+  const handleResetCycle = useCallback(async () => {
     try {
       await apiService.resetCycle()
       setMessage({ type: 'success', text: 'Cycle reset successfully!' })
@@ -217,9 +278,9 @@ export default function DashboardPage() {
     } catch {
       setMessage({ type: 'error', text: 'Failed to reset cycle' })
     }
-  }
+  }, [loadDashboardData])
 
-  const handleDeleteAll = async () => {
+  const handleDeleteAll = useCallback(async () => {
     if (!confirm('Are you sure you want to delete all problems? This action cannot be undone.')) {
       return
     }
@@ -231,7 +292,7 @@ export default function DashboardPage() {
     } catch {
       setMessage({ type: 'error', text: 'Failed to delete problems' })
     }
-  }
+  }, [loadDashboardData])
 
   if (!isHydrated || (!user && isHydrated) || isLoading) {
     return (
@@ -293,17 +354,24 @@ export default function DashboardPage() {
             className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50"
           >
             <div className={`px-6 py-3 rounded-lg shadow-lg backdrop-blur-sm ${
-              message.type === 'success' 
-                ? 'bg-emerald-500/90 text-white' 
+              message.type === 'success'
+                ? 'bg-emerald-500/90 text-white'
                 : 'bg-red-500/90 text-white'
             }`}>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 {message.type === 'success' ? (
                   <CheckCircle2 className="w-5 h-5" />
                 ) : (
                   <AlertTriangle className="w-5 h-5" />
                 )}
-                {message.text}
+                <span>{message.text}</span>
+                <button
+                  onClick={() => setMessage(null)}
+                  className="ml-2 hover:bg-white/20 rounded p-1 transition-colors cursor-pointer"
+                  aria-label="Dismiss message"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
             </div>
           </motion.div>
@@ -586,17 +654,19 @@ export default function DashboardPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      {generatedProblems.map((problem, index) => (
+                      {generatedProblems.map((problem) => (
                         <motion.div
                           key={problem._id}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.3, delay: index * 0.1 }}
+                          layout
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.15 }}
                           className="flex items-center gap-4 p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-all duration-200 border border-white/10 hover:border-white/20"
                         >
                           <button
                             onClick={() => toggleProblemDone(problem._id)}
-                            className="flex-shrink-0"
+                            className="flex-shrink-0 cursor-pointer"
                           >
                             {problem.done ? (
                               <CheckCircle2 className="w-5 h-5 text-emerald-600" />
