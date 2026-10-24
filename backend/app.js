@@ -20,6 +20,7 @@ app.use(
       "http://localhost:7001",
       "http://127.0.0.1:7001",
       "https://dsatracker.atharvajadhav.dev",
+      "https://dsatracker.atharvajadhav.com",
     ],
 
     credentials: true,
