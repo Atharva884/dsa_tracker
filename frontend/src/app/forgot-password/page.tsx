@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Mail, ArrowRight, ArrowLeft, KeyRound } from 'lucide-react'
 import Link from 'next/link'
@@ -20,6 +20,9 @@ const containerVariants = {
   },
 }
 
+// Matches the backend's cooldown between reset emails
+const RESEND_COOLDOWN_SECONDS = 60
+
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
@@ -37,20 +40,32 @@ export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [sentMessage, setSentMessage] = useState('')
+  const [cooldown, setCooldown] = useState(0)
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  useEffect(() => {
+    if (cooldown <= 0) return
+    const timer = setTimeout(() => setCooldown(cooldown - 1), 1000)
+    return () => clearTimeout(timer)
+  }, [cooldown])
+
+  const sendResetLink = async () => {
     setIsLoading(true)
     setError('')
 
     try {
       const response = await apiService.forgotPassword(email)
       setSentMessage(response.message)
+      setCooldown(RESEND_COOLDOWN_SECONDS)
     } catch (error: unknown) {
       setError(getErrorMessage(error, 'Something went wrong. Please try again.'))
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    sendResetLink()
   }
 
   return (
@@ -84,16 +99,36 @@ export default function ForgotPasswordPage() {
                   <div className="p-4 bg-emerald-950/40 border border-emerald-800 rounded-lg text-emerald-300 text-sm">
                     {sentMessage}
                   </div>
+                  {error && (
+                    <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                      {error}
+                    </div>
+                  )}
                   <p className="text-sm text-gray-400">
-                    Didn&apos;t get it? Check your spam folder, or try again in a minute.
+                    Sent to <span className="text-gray-200">{email}</span>. Didn&apos;t get it? Check your spam folder.
                   </p>
                   <Button
                     type="button"
-                    onClick={() => setSentMessage('')}
+                    onClick={sendResetLink}
+                    disabled={isLoading || cooldown > 0}
                     className="supabase-button-primary w-full h-12 font-medium rounded-lg"
                   >
-                    Send again
+                    {isLoading
+                      ? 'Sending...'
+                      : cooldown > 0
+                        ? `Resend link in ${cooldown}s`
+                        : 'Resend link'}
                   </Button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSentMessage('')
+                      setError('')
+                    }}
+                    className="text-sm text-purple-400 hover:text-purple-300 transition-colors cursor-pointer"
+                  >
+                    Use a different email
+                  </button>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-6">
