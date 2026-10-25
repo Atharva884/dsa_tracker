@@ -102,6 +102,16 @@ class ApiService {
     return response.data as ApiResponse<AuthResponse>;
   }
 
+  async forgotPassword(email: string) {
+    const response = await api.post("/api/forgot-password", { email });
+    return response.data as ApiResponse<boolean>;
+  }
+
+  async resetPassword(token: string, password: string) {
+    const response = await api.post("/api/reset-password", { token, password });
+    return response.data as ApiResponse<boolean>;
+  }
+
   async logout() {
     try {
       // Optional: call backend logout endpoint if it exists
@@ -165,6 +175,14 @@ class ApiService {
     const response = await api.post(`/api/update-by-id/${id}`, data);
     return response.data as ApiResponse<User>;
   }
+}
+
+// Pull the backend's error message out of an axios error
+export function getErrorMessage(error: unknown, fallback: string) {
+  if (axios.isAxiosError(error) && error.response?.data?.message) {
+    return error.response.data.message as string;
+  }
+  return fallback;
 }
 
 export const apiService = new ApiService();

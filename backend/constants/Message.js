@@ -12,6 +12,19 @@ Messages.prototype.UNAUTHORIZED = "Unauthorized to access";
 Messages.prototype.UNAUTHORIZED_SESSION_EXPIRED =
   "Unauthorized to access, session expired";
 
+//Password Reset Messages
+Messages.prototype.EMAIL_REQUIRED = "Please enter your email.";
+Messages.prototype.RESET_EMAIL_SENT =
+  "If an account exists for this email, a reset link has been sent.";
+Messages.prototype.EMAIL_SEND_FAILED =
+  "Could not send the reset email. Please try again later.";
+Messages.prototype.INVALID_NEW_PASSWORD =
+  "Password must be at least 6 characters.";
+Messages.prototype.INVALID_RESET_TOKEN =
+  "This reset link is invalid or has expired.";
+Messages.prototype.PASSWORD_RESET_SUCCESS =
+  "Password reset successfully. Please sign in.";
+
 //CRUD Messages
 Messages.prototype.CREATE_FAILED = "Failed to Create New Entry";
 Messages.prototype.SUCCESSFULLY_DELETED = "Data successfully deleted";

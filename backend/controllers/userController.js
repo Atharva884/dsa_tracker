@@ -3,6 +3,8 @@ const JsonResponse = require("../helper/JsonResponse");
 const TryCatch = require("../helper/TryCatch");
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
+const Mailer = require("../helper/Mailer");
 
 // how long a token lasts before expiring
 const tokenLasts = "365d";
@@ -61,6 +63,82 @@ exports.apiRegister = async function (req, res) {
     res.locals.message = regErrors;
     new JsonResponse(req, res).jsonError();
   }
+};
+
+const RESET_TOKEN_TTL_MS = 30 * 60 * 1000;
+const RESET_REQUEST_COOLDOWN_MS = 60 * 1000;
+const FRONTEND_URL =
+  process.env.FRONTEND_URL || "https://dsatracker.atharvajadhav.com";
+
+const hashToken = (token) =>
+  crypto.createHash("sha256").update(token).digest("hex");
+
+//FORGOT PASSWORD
+exports.apiForgotPassword = async function (req, res) {
+  const email = (req.body.email || "").trim().toLowerCase();
+  if (!email) {
+    res.locals.message = new Messages().EMAIL_REQUIRED;
+    return new JsonResponse(req, res).jsonError();
+  }
+
+  let user = new User();
+  let userDoc = await user.findByEmail(email);
+
+  // Skip silently for unknown emails or repeat requests within the cooldown,
+  // so the response never reveals whether an account exists
+  const recentlyRequested =
+    userDoc?.resetPasswordRequestedAt &&
+    Date.now() - new Date(userDoc.resetPasswordRequestedAt).getTime() <
+      RESET_REQUEST_COOLDOWN_MS;
+
+  if (userDoc && !recentlyRequested) {
+    const token = crypto.randomBytes(32).toString("hex");
+    await user.saveResetToken(
+      userDoc._id,
+      hashToken(token),
+      new Date(Date.now() + RESET_TOKEN_TTL_MS)
+    );
+
+    try {
+      await Mailer.sendPasswordResetEmail(
+        userDoc.email,
+        userDoc.name,
+        `${FRONTEND_URL}/reset-password?token=${token}`
+      );
+    } catch (error) {
+      console.error("Password reset email failed:", error.message);
+      res.locals.status_code = 500;
+      res.locals.message = new Messages().EMAIL_SEND_FAILED;
+      return new JsonResponse(req, res).jsonError();
+    }
+  }
+
+  new JsonResponse(req, res).jsonSuccess(
+    true,
+    new Messages().RESET_EMAIL_SENT
+  );
+};
+
+//RESET PASSWORD
+exports.apiResetPassword = async function (req, res) {
+  const { token, password } = req.body;
+
+  if (!token || !password || password.length < 6) {
+    res.locals.message = new Messages().INVALID_NEW_PASSWORD;
+    return new JsonResponse(req, res).jsonError();
+  }
+
+  let user = new User();
+  let result = await user.resetPasswordWithToken(hashToken(token), password);
+  if (!result) {
+    res.locals.message = new Messages().INVALID_RESET_TOKEN;
+    return new JsonResponse(req, res).jsonError();
+  }
+
+  new JsonResponse(req, res).jsonSuccess(
+    true,
+    new Messages().PASSWORD_RESET_SUCCESS
+  );
 };
 
 //User Exists?

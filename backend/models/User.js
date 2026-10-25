@@ -110,6 +110,36 @@ User.prototype.updateByEmail = async function (email, data) {
 };
 
 
+// Store a hashed password reset token with its expiry
+User.prototype.saveResetToken = async function (id, tokenHash, expiresAt) {
+  await usersCollection.updateOne(
+    { _id: new ObjectId(id) },
+    {
+      $set: {
+        resetPasswordTokenHash: tokenHash,
+        resetPasswordExpires: expiresAt,
+        resetPasswordRequestedAt: new Date(),
+      },
+    }
+  );
+};
+
+// Set a new password if the reset token is valid and not expired
+User.prototype.resetPasswordWithToken = async function (tokenHash, password) {
+  let salt = bcrypt.genSaltSync(10);
+  let result = await usersCollection.updateOne(
+    {
+      resetPasswordTokenHash: tokenHash,
+      resetPasswordExpires: { $gt: new Date() },
+    },
+    {
+      $set: { password: bcrypt.hashSync(password, salt), updatedAt: new Date() },
+      $unset: { resetPasswordTokenHash: "", resetPasswordExpires: "" },
+    }
+  );
+  return result.modifiedCount === 1;
+};
+
 User.prototype.getAllUsers = async function (){
   let userDoc = await usersCollection.find({}).toArray()
   return userDoc

@@ -153,9 +153,17 @@ export default function SignInPage() {
 
                 {/* Password Field */}
                 <div className="space-y-2">
-                  <label htmlFor="password" className="text-sm font-medium text-gray-200">
-                    Password
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label htmlFor="password" className="text-sm font-medium text-gray-200">
+                      Password
+                    </label>
+                    <Link
+                      href="/forgot-password"
+                      className="text-sm text-purple-400 hover:text-purple-300 transition-colors"
+                    >
+                      Forgot password?
+                    </Link>
+                  </div>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <Input

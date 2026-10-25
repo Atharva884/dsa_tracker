@@ -18,6 +18,14 @@ router.post(
   "/api/login",
   new TryCatch(userController.apiLogin).tryCatchGlobe()
 );
+router.post(
+  "/api/forgot-password",
+  new TryCatch(userController.apiForgotPassword).tryCatchGlobe()
+);
+router.post(
+  "/api/reset-password",
+  new TryCatch(userController.apiResetPassword).tryCatchGlobe()
+);
 
 // Protected Routes - Problems
 router.post(
